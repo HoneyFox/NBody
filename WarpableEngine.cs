@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using UnityEngine;
 
 namespace NBody
@@ -71,6 +72,7 @@ namespace NBody
 				if (isEngineFX == false && engine != null)
 				{
 					engine.requestedThrottle = engine.currentThrottle = throttle / 100.0f;
+					engine.GetType().GetMethod("UpdatePropellantStatus", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(engine, null);
 					engine.finalThrust = engine.CalculateThrust();
 
 					try
@@ -110,6 +112,7 @@ namespace NBody
 				else if (isEngineFX == true && engineFX != null)
 				{
 					engineFX.requestedThrottle = engineFX.currentThrottle = throttle / 100.0f;
+					engineFX.GetType().GetMethod("UpdatePropellantStatus", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(engineFX, null);
 					engineFX.finalThrust = engineFX.CalculateThrust();
 					try
 					{
