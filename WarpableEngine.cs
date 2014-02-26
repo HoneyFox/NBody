@@ -81,22 +81,22 @@ namespace NBody
 						{
 							engine.DeactivatePowerFX();
 							engine.DeactivateRunningFX();
-							engineFX.finalThrust = 0.0f;
+							engine.finalThrust = 0.0f;
 						}
 						else
 						{
 							engine.ActivatePowerFX();
 							engine.ActivateRunningFX();
-							engine.part.findFxGroup("power").SetPower(engineFX.finalThrust / engineFX.maxThrust);
-							engine.part.findFxGroup("running").SetPower(engineFX.finalThrust / engineFX.maxThrust);
+							engine.part.findFxGroup("power").SetPower(engine.finalThrust / engine.maxThrust);
+							engine.part.findFxGroup("running").SetPower(engine.finalThrust / engine.maxThrust);
 							if (engine.part.Modules.Contains("FXModuleAnimateThrottle"))
 							{
 								FXModuleAnimateThrottle m = engine.part.Modules["FXModuleAnimateThrottle"] as FXModuleAnimateThrottle;
-								engine.EngineIgnited = true;
-								float origThrottle = vessel.ctrlState.mainThrottle;
-								vessel.ctrlState.mainThrottle = throttle / 100.0f;
-								m.OnUpdate();
-								vessel.ctrlState.mainThrottle = origThrottle;
+								//m.isEnabled = false;
+								if(m.animation.IsPlaying(m.animationName) == false)
+									m.animation.Play(m.animationName);
+								m.animation[m.animationName].normalizedTime = throttle;
+								m.gameObject.SampleAnimation(m.animation[m.animationName].clip, throttle / m.animation[m.animationName].clip.length);
 							}
 						}
 					}
@@ -126,14 +126,14 @@ namespace NBody
 						{
 							engineFX.part.Effect(engineFX.powerEffectName, engineFX.finalThrust / engineFX.maxThrust);
 							engineFX.part.Effect(engineFX.runningEffectName, engineFX.finalThrust / engineFX.maxThrust);
-							if (engine.part.Modules.Contains("FXModuleAnimateThrottle"))
+							if (engineFX.part.Modules.Contains("FXModuleAnimateThrottle"))
 							{
-								FXModuleAnimateThrottle m = engine.part.Modules["FXModuleAnimateThrottle"] as FXModuleAnimateThrottle;
-								engine.EngineIgnited = true; 
-								float origThrottle = vessel.ctrlState.mainThrottle;
-								vessel.ctrlState.mainThrottle = throttle / 100.0f;
-								m.OnUpdate();
-								vessel.ctrlState.mainThrottle = origThrottle;
+								FXModuleAnimateThrottle m = engineFX.part.Modules["FXModuleAnimateThrottle"] as FXModuleAnimateThrottle;
+								//m.isEnabled = false;
+								if (m.animation.IsPlaying(m.animationName) == false)
+									m.animation.Play(m.animationName);
+								m.animation[m.animationName].normalizedTime = throttle;
+								m.gameObject.SampleAnimation(m.animation[m.animationName].clip, throttle / m.animation[m.animationName].clip.length);
 							}
 						}
 					}
@@ -141,9 +141,9 @@ namespace NBody
 					{ }
 
 					Vector3d averageThrustVector = new Vector3d();
-					foreach (Transform tf in engine.thrustTransforms)
+					foreach (Transform tf in engineFX.thrustTransforms)
 						averageThrustVector += tf.forward * -1;
-					averageThrustVector /= engine.thrustTransforms.Count;
+					averageThrustVector /= engineFX.thrustTransforms.Count;
 					finalAcc = averageThrustVector.normalized * engineFX.finalThrust / vessel.GetTotalMass();
 				}
 
@@ -179,6 +179,23 @@ namespace NBody
 					throttle = 0f;
 				lastUpdateIsWarping = false;
 				engine.DeactivatePowerFX();
+
+				//if(isEngineFX == false)
+				//{
+				//    if (engine.part.Modules.Contains("FXModuleAnimateThrottle"))
+				//    {
+				//        FXModuleAnimateThrottle m = engine.part.Modules["FXModuleAnimateThrottle"] as FXModuleAnimateThrottle;
+				//        m.isEnabled = true;
+				//    }
+				//}
+				//else
+				//{
+				//    if (engineFX.part.Modules.Contains("FXModuleAnimateThrottle"))
+				//    {
+				//        FXModuleAnimateThrottle m = engineFX.part.Modules["FXModuleAnimateThrottle"] as FXModuleAnimateThrottle;
+				//        m.isEnabled = true;
+				//    }
+				//}
 			}
 		}
 	}

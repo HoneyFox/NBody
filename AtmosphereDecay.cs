@@ -7,10 +7,10 @@ using UnityEngine;
 namespace NBody
 {
 	[KSPAddon(KSPAddon.Startup.Flight, true)]
-	public class AtmosphereDecoy : MonoBehaviour
+	public class AtmosphereDecay : MonoBehaviour
 	{
-		public static AtmosphereDecoy s_singleton = null;
-		public static AtmosphereDecoy GetInstance() { return s_singleton; }
+		public static AtmosphereDecay s_singleton = null;
+		public static AtmosphereDecay GetInstance() { return s_singleton; }
 
 		public static double sAirDensityThreshold = 0.000000001;
 		public static double sAverageCd = 0.15;

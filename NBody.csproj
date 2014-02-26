@@ -48,7 +48,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AtmosphereDecoy.cs" />
+    <Compile Include="AtmosphereDecay.cs" />
     <Compile Include="NBody.cs" />
     <Compile Include="WarpableEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
