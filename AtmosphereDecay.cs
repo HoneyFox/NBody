@@ -14,13 +14,33 @@ namespace NBody
 
 		public static double sAirDensityThreshold = 0.000000001;
 		public static double sAverageCd = 0.15;
-		
+
+		private IButton btnAtmosphereDecay = null;
+
 		public void Awake()
 		{
 			Debug.Log("NBody Awake()");
 			if (s_singleton == null)
 				s_singleton = this;
 			DontDestroyOnLoad(s_singleton);
+
+			if (ToolbarManager.ToolbarAvailable)
+			{
+				btnAtmosphereDecay = ToolbarManager.Instance.add("NBody", "atmospheredecay");
+				btnAtmosphereDecay.TexturePath = "NBody/Textures/AtmosDecayOn";
+				btnAtmosphereDecay.ToolTip = "Atmosphere Decay";
+				btnAtmosphereDecay.OnClick += (e) =>
+				{
+					activated = !activated;
+					btnAtmosphereDecay.TexturePath = activated ? "NBody/Textures/AtmosDecayOn" : "NBody/Textures/AtmosDecayOff";
+				};
+			}
+		}
+
+		public void OnDestroy()
+		{
+			if(btnAtmosphereDecay != null)
+				btnAtmosphereDecay.Destroy();
 		}
 
 		bool activated = true;
@@ -59,27 +79,11 @@ namespace NBody
 						if (airDensity >= sAirDensityThreshold && v.mainBody.atmosphere == true && v.altitude <= v.mainBody.maxAtmosphereAltitude)
 						{
 							Vector3d dragVector = -v.orbit.vel.normalized * (float)(0.5 * sAverageCd * airDensity * v.orbit.vel.sqrMagnitude / 1000.0);
-							Debug.Log(v.orbit.vel.ToString() + " 0.5*" + sAverageCd.ToString() + "*" + (airDensity * v.orbit.vel.sqrMagnitude).ToString() + "/1000.0 = " + dragVector.ToString());
-							
-							Vector3d position = v.orbit.getRelativePositionAtUT(Planetarium.GetUniversalTime());
-							Orbit orbit2 = new Orbit(v.orbit.inclination, v.orbit.eccentricity, v.orbit.semiMajorAxis, v.orbit.LAN, v.orbit.argumentOfPeriapsis, v.orbit.meanAnomalyAtEpoch, v.orbit.epoch, v.orbit.referenceBody);
-							orbit2.UpdateFromStateVectors(position, v.orbit.vel + dragVector * TimeWarp.fixedDeltaTime, v.orbit.referenceBody, Planetarium.GetUniversalTime());
+							//Debug.Log(v.orbit.vel.ToString() + " 0.5*" + sAverageCd.ToString() + "*" + (airDensity * v.orbit.vel.sqrMagnitude).ToString() + "/1000.0 = " + dragVector.ToString());
 
-							if (!double.IsNaN(orbit2.inclination) && !double.IsNaN(orbit2.eccentricity) && !double.IsNaN(orbit2.semiMajorAxis)) // && orbit2.timeToAp > TimeWarp.fixedDeltaTime)
-							{
-								v.orbit.inclination = orbit2.inclination;
-								v.orbit.eccentricity = orbit2.eccentricity;
-								v.orbit.semiMajorAxis = orbit2.semiMajorAxis;
-								v.orbit.LAN = orbit2.LAN;
-								v.orbit.argumentOfPeriapsis = orbit2.argumentOfPeriapsis;
-								v.orbit.meanAnomalyAtEpoch = orbit2.meanAnomalyAtEpoch;
-								v.orbit.epoch = orbit2.epoch;
-								v.orbit.referenceBody = orbit2.referenceBody;
-								v.orbit.Init();
+							if (OrbitManipulator.s_singleton != null)
+								OrbitManipulator.s_singleton.AddManipulation(v, dragVector);
 
-								//prevVessel.orbit.UpdateFromOrbitAtUT(orbit2, Planetarium.GetUniversalTime(), orbit2.referenceBody);
-								v.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
-							}
 						}
 					}
 				}

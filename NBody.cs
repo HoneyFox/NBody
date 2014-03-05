@@ -23,12 +23,32 @@ namespace NBody
 			return s_singleton;
 		}
 
+		private IButton btnNBodyForce = null;
+
 		public void Awake()
 		{
 			Debug.Log("NBody Awake()");
 			if (s_singleton == null)
 				s_singleton = this;
 			DontDestroyOnLoad(s_singleton);
+
+			if (ToolbarManager.ToolbarAvailable)
+			{
+				btnNBodyForce = ToolbarManager.Instance.add("NBody", "force");
+				btnNBodyForce.TexturePath = "NBody/Textures/NBodyOn";
+				btnNBodyForce.ToolTip = "NBody";
+				btnNBodyForce.OnClick += (e) =>
+				{
+					forceApplying = !forceApplying;
+					btnNBodyForce.TexturePath = forceApplying ? "NBody/Textures/NBodyOn" : "NBody/Textures/NBodyOff";
+				};
+			}
+		}
+
+		public void OnDestroy()
+		{
+			if(btnNBodyForce != null)
+				btnNBodyForce.Destroy();
 		}
 
 		Vessel prevVessel = null;
@@ -145,25 +165,8 @@ namespace NBody
 										{
 											//Debug.Log("NBody: acc/pos/vel: " + actualForce.ToString() + " " + prevVessel.orbit.pos.ToString() + " " + prevVessel.orbit.vel.ToString());
 
-											Vector3d position = prevVessel.orbit.getRelativePositionAtUT(Planetarium.GetUniversalTime());
-											Orbit orbit2 = new Orbit(prevVessel.orbit.inclination, prevVessel.orbit.eccentricity, prevVessel.orbit.semiMajorAxis, prevVessel.orbit.LAN, prevVessel.orbit.argumentOfPeriapsis, prevVessel.orbit.meanAnomalyAtEpoch, prevVessel.orbit.epoch, prevVessel.orbit.referenceBody);
-											orbit2.UpdateFromStateVectors(position, prevVessel.orbit.vel + actualForce * timeAccumulated * times, prevVessel.orbit.referenceBody, Planetarium.GetUniversalTime());
-
-											if (!double.IsNaN(orbit2.inclination) && !double.IsNaN(orbit2.eccentricity) && !double.IsNaN(orbit2.semiMajorAxis)) // && orbit2.timeToAp > TimeWarp.fixedDeltaTime)
-											{
-												prevVessel.orbit.inclination = orbit2.inclination;
-												prevVessel.orbit.eccentricity = orbit2.eccentricity;
-												prevVessel.orbit.semiMajorAxis = orbit2.semiMajorAxis;
-												prevVessel.orbit.LAN = orbit2.LAN;
-												prevVessel.orbit.argumentOfPeriapsis = orbit2.argumentOfPeriapsis;
-												prevVessel.orbit.meanAnomalyAtEpoch = orbit2.meanAnomalyAtEpoch;
-												prevVessel.orbit.epoch = orbit2.epoch;
-												prevVessel.orbit.referenceBody = orbit2.referenceBody;
-												prevVessel.orbit.Init();
-
-												//prevVessel.orbit.UpdateFromOrbitAtUT(orbit2, Planetarium.GetUniversalTime(), orbit2.referenceBody);
-												prevVessel.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
-											}
+											if (OrbitManipulator.s_singleton != null)
+												OrbitManipulator.s_singleton.AddManipulation(prevVessel, actualForce * timeAccumulated * times / TimeWarp.fixedDeltaTime);
 
 											timeAccumulated = 0.0f;
 										}
