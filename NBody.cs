@@ -184,6 +184,9 @@ namespace NBody
 					if (activated == false)
 					{
 						predictionLineRenderer.enabled = false;
+						coordXRenderer.enabled = false;
+						coordYRenderer.enabled = false;
+						coordZRenderer.enabled = false; 
 						return;
 					}
 
