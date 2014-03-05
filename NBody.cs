@@ -64,6 +64,7 @@ namespace NBody
 				if (Input.GetKey(KeyCode.RightAlt) && Input.GetKey(KeyCode.RightControl) && Input.GetKeyDown(KeyCode.N))
 				{
 					forceApplying = !forceApplying;
+					btnNBodyForce.TexturePath = forceApplying ? "NBody/Textures/NBodyOn" : "NBody/Textures/NBodyOff";
 					if (forceApplying)
 					{
 						Debug.Log("NBody Simulation Force Activated.");

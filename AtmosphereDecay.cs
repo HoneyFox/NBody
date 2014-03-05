@@ -53,6 +53,7 @@ namespace NBody
 				if (Input.GetKey(KeyCode.RightAlt) && Input.GetKeyDown(KeyCode.D))
 				{
 					activated = !activated;
+					btnAtmosphereDecay.TexturePath = activated ? "NBody/Textures/AtmosDecayOn" : "NBody/Textures/AtmosDecayOff";
 					if (activated)
 					{
 						Debug.Log("Atmosphere Decoy Activated.");
