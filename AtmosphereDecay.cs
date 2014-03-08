@@ -15,7 +15,7 @@ namespace NBody
 		public static double sAirDensityThreshold = 0.000000001;
 		public static double sAverageCd = 0.15;
 
-		private IButton btnAtmosphereDecay = null;
+		public IButton btnAtmosphereDecay = null;
 
 		public void Awake()
 		{
@@ -33,6 +33,7 @@ namespace NBody
 				{
 					activated = !activated;
 					btnAtmosphereDecay.TexturePath = activated ? "NBody/Textures/AtmosDecayOn" : "NBody/Textures/AtmosDecayOff";
+					OrbitManipulator.s_singleton.SaveConfigs();
 				};
 			}
 		}
@@ -43,7 +44,7 @@ namespace NBody
 				btnAtmosphereDecay.Destroy();
 		}
 
-		bool activated = true;
+		public bool activated = true;
 
 		public void Update()
 		{
@@ -54,6 +55,7 @@ namespace NBody
 				{
 					activated = !activated;
 					btnAtmosphereDecay.TexturePath = activated ? "NBody/Textures/AtmosDecayOn" : "NBody/Textures/AtmosDecayOff";
+					OrbitManipulator.s_singleton.SaveConfigs(); 
 					if (activated)
 					{
 						Debug.Log("Atmosphere Decoy Activated.");

@@ -7,6 +7,96 @@ using UnityEngine;
 
 namespace NBody
 {
+	[KSPAddon(KSPAddon.Startup.Flight, true)]
+	public class WarpableEngineThrottleGUI : MonoBehaviour
+	{
+		public static WarpableEngineThrottleGUI s_singleton = null;
+		public static WarpableEngineThrottleGUI GetInstance() { return s_singleton; }
+		
+		public IButton btnWarpableEngineList = null;
+		public bool activated = true;
+		
+		private Rect windowRect = new Rect(60, 120, 200, 50);
+		private List<WarpableEngine> engines = new List<WarpableEngine>();
+
+		public void Awake()
+		{
+			Debug.Log("NBody Awake()");
+			if (s_singleton == null)
+				s_singleton = this;
+			DontDestroyOnLoad(s_singleton);
+
+			if (ToolbarManager.ToolbarAvailable)
+			{
+				btnWarpableEngineList = ToolbarManager.Instance.add("NBody", "warpableenginelist");
+				btnWarpableEngineList.TexturePath = "NBody/Textures/WarpableEngineListOn";
+				btnWarpableEngineList.ToolTip = "WarpableEngine List";
+				btnWarpableEngineList.OnClick += (e) =>
+				{
+					activated = !activated;
+					btnWarpableEngineList.TexturePath = activated ? "NBody/Textures/WarpableEngineListOn" : "NBody/Textures/WarpableEngineListOff";
+					OrbitManipulator.s_singleton.SaveConfigs();
+				};
+			}
+
+			engines.Clear();
+		}
+
+		public void OnDestroy()
+		{
+			if (btnWarpableEngineList != null)
+				btnWarpableEngineList.Destroy();
+			engines.Clear();
+		}
+		
+		void OnGUI()
+		{
+			if (HighLogic.LoadedSceneIsFlight && activated && engines.Count > 0)
+			{
+				GUI.skin = HighLogic.Skin;
+				windowRect = GUILayout.Window(22113141, windowRect, DrawGUI, "Warpable Engines", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+			}
+		}
+
+		void Update()
+		{
+			if(FlightGlobals.fetch != null && FlightGlobals.fetch.activeVessel != null)
+			{
+				foreach (Part p in FlightGlobals.fetch.activeVessel.Parts)
+				{
+					if (p.Modules.Contains("WarpableEngine"))
+					{
+						WarpableEngine we = p.Modules["WarpableEngine"] as WarpableEngine;
+						if (!engines.Contains(we))
+						{
+							engines.Add(we);
+						}
+					}
+				}
+				for (int i = 0; i < engines.Count; ++i)
+				{
+					if (engines[i] == null || engines[i].vessel != FlightGlobals.fetch.activeVessel)
+					{
+						engines.RemoveAt(i);
+						i--;
+					}
+				}
+			}
+		}
+
+		private void DrawGUI(int windowId)
+		{
+			GUILayout.BeginVertical();
+			foreach (WarpableEngine we in engines)
+			{ 
+				GUILayout.Label(we.part.partInfo.title, GUILayout.MaxWidth(200));
+				we.throttle = Mathf.RoundToInt(GUILayout.HorizontalSlider(we.throttle, 0.0f, 100.0f, GUILayout.Width(200)));
+			}
+			GUILayout.EndVertical();
+			GUI.DragWindow(new Rect(0, 0, 200, 20));
+		}
+	}
+
 	public class WarpableEngine : PartModule
 	{
 		// This is a class used to allow low-thrust engines to work during time-warp.

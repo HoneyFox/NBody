@@ -24,6 +24,56 @@ namespace NBody
 			manipulations = new Dictionary<Vessel, Vector3d>();
 		}
 
+		public void Start()
+		{
+			ConfigNode settingNode = null;
+			foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("ORBITMANIPULATORSETTINGS"))
+			{
+				settingNode = node;
+				break;
+			}
+			if (settingNode != null)
+			{
+				if (settingNode.HasValue("AtmosphereDecay"))
+				{
+					bool atmosphereDecayActivated;
+					if (bool.TryParse(settingNode.GetValue("AtmosphereDecay"), out atmosphereDecayActivated))
+					{
+						if (AtmosphereDecay.s_singleton != null)
+						{
+							AtmosphereDecay.s_singleton.activated = atmosphereDecayActivated;
+							AtmosphereDecay.s_singleton.btnAtmosphereDecay.TexturePath = atmosphereDecayActivated ? "NBody/Textures/AtmosDecayOn" : "NBody/Textures/AtmosDecayOff";
+						}
+					}
+				}
+				if (settingNode.HasValue("NBodyForce"))
+				{
+					bool nBodyForceActivated;
+					if (bool.TryParse(settingNode.GetValue("NBodyForce"), out nBodyForceActivated))
+					{
+						if (NBody.s_singleton != null)
+						{
+							NBody.s_singleton.forceApplying = nBodyForceActivated;
+							NBody.s_singleton.btnNBodyForce.TexturePath = nBodyForceActivated ? "NBody/Textures/NBodyOn" : "NBody/Textures/NBodyOff";
+						}
+					}
+				}
+				if (settingNode.HasValue("WarpableEngineList"))
+				{
+					bool warpableEngineListActivated;
+					if (bool.TryParse(settingNode.GetValue("WarpableEngineList"), out warpableEngineListActivated))
+					{
+						if (WarpableEngineThrottleGUI.s_singleton != null)
+						{
+							WarpableEngineThrottleGUI.s_singleton.activated = warpableEngineListActivated;
+							WarpableEngineThrottleGUI.s_singleton.btnWarpableEngineList.TexturePath = warpableEngineListActivated ? "NBody/Textures/WarpableEngineListOn" : "NBody/Textures/WarpableEngineListOff";
+						}
+					}
+				}
+				
+			}
+		}
+
 		public void AddManipulation(Vessel vessel, Vector3d acceleration)
 		{
 			if (manipulations.ContainsKey(vessel))
@@ -33,6 +83,25 @@ namespace NBody
 			else
 			{
 				manipulations[vessel] = acceleration;
+			}
+		}
+
+		public void SaveConfigs() 
+		{
+			ConfigNode settingNode = null;
+			foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("ORBITMANIPULATORSETTINGS"))
+			{
+				settingNode = node;
+				break;
+			}
+			if (settingNode != null)
+			{
+				settingNode.SetValue("AtmosphereDecay", AtmosphereDecay.s_singleton.activated.ToString());
+				settingNode.SetValue("NBodyForce", NBody.s_singleton.forceApplying.ToString());
+				settingNode.SetValue("WarpableEngineList", WarpableEngineThrottleGUI.s_singleton.activated.ToString());
+				ConfigNode saveNode = new ConfigNode();
+				saveNode.AddNode(settingNode);
+				saveNode.Save(KSPUtil.ApplicationRootPath.Replace("\\", "/") + "GameData/NBody/Settings.cfg");
 			}
 		}
 

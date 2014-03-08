@@ -23,7 +23,7 @@ namespace NBody
 			return s_singleton;
 		}
 
-		private IButton btnNBodyForce = null;
+		public IButton btnNBodyForce = null;
 
 		public void Awake()
 		{
@@ -41,6 +41,7 @@ namespace NBody
 				{
 					forceApplying = !forceApplying;
 					btnNBodyForce.TexturePath = forceApplying ? "NBody/Textures/NBodyOn" : "NBody/Textures/NBodyOff";
+					OrbitManipulator.s_singleton.SaveConfigs();
 				};
 			}
 		}
@@ -52,8 +53,8 @@ namespace NBody
 		}
 
 		Vessel prevVessel = null;
-		bool activated = false;
-		bool forceApplying = true;
+		public bool activated = false;
+		public bool forceApplying = true;
 		float timeAccumulated = 0.0f;
 
 		public void Update()
@@ -65,6 +66,7 @@ namespace NBody
 				{
 					forceApplying = !forceApplying;
 					btnNBodyForce.TexturePath = forceApplying ? "NBody/Textures/NBodyOn" : "NBody/Textures/NBodyOff";
+					OrbitManipulator.s_singleton.SaveConfigs(); 
 					if (forceApplying)
 					{
 						Debug.Log("NBody Simulation Force Activated.");
