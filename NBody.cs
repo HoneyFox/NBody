@@ -128,6 +128,22 @@ namespace NBody
 									Vector3d locationVector = cb.position - part.transform.position;
 									force += locationVector.normalized * cb.gravParameter / locationVector.sqrMagnitude;
 								}
+								else
+								{
+									if(cb == prevVessel.mainBody && cb.referenceBody != null && cb.referenceBody != cb)
+									{
+										Vector3d locationVector;
+
+										locationVector = cb.referenceBody.position - part.transform.position;
+										Vector3d forceTopBodyToVessel = locationVector.normalized * cb.referenceBody.gravParameter / locationVector.sqrMagnitude;
+										locationVector = cb.referenceBody.position - cb.position;
+										Vector3d forceTopBodyToMainBody = locationVector.normalized * cb.referenceBody.gravParameter / locationVector.sqrMagnitude;
+										
+										//if((forceTopBodyToVessel - forceTopBodyToMainBody).magnitude > 0.0000001f)
+										//	Debug.Log("AccDiff: " + (forceTopBodyToVessel - forceTopBodyToMainBody).ToString()); 
+										force += forceTopBodyToVessel - forceTopBodyToMainBody;
+									}
+								}
 							}
 							//if (FlightGlobals.fetch.vessels != null)
 							//{
