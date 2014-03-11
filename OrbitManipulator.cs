@@ -117,8 +117,9 @@ namespace NBody
 					Orbit orbit2 = new Orbit(vessel.orbit.inclination, vessel.orbit.eccentricity, vessel.orbit.semiMajorAxis, vessel.orbit.LAN, vessel.orbit.argumentOfPeriapsis, vessel.orbit.meanAnomalyAtEpoch, vessel.orbit.epoch, vessel.orbit.referenceBody);
 					orbit2.UpdateFromStateVectors(position, vessel.orbit.vel + totalAccOnVessel * TimeWarp.fixedDeltaTime, vessel.orbit.referenceBody, Planetarium.GetUniversalTime());
 
-					if (!double.IsNaN(orbit2.inclination) && !double.IsNaN(orbit2.eccentricity) && !double.IsNaN(orbit2.semiMajorAxis)) // && orbit2.timeToAp > TimeWarp.fixedDeltaTime)
+					if (!double.IsNaN(orbit2.inclination) && !double.IsNaN(orbit2.eccentricity) && !double.IsNaN(orbit2.semiMajorAxis))
 					{
+						if (double.IsNaN(orbit2.timeToAp) || (orbit2.timeToAp > TimeWarp.fixedDeltaTime))
 						vessel.orbit.inclination = orbit2.inclination;
 						vessel.orbit.eccentricity = orbit2.eccentricity;
 						vessel.orbit.semiMajorAxis = orbit2.semiMajorAxis;

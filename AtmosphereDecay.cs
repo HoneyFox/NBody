@@ -71,6 +71,8 @@ namespace NBody
 		public void FixedUpdate()
 		{
 			if (HighLogic.LoadedSceneIsFlight == false) return;
+			if (activated == false) return;
+
 			if (FlightGlobals.fetch != null)
 			{
 				foreach (Vessel v in FlightGlobals.fetch.vessels)
