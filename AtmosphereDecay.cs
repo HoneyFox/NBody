@@ -14,6 +14,8 @@ namespace NBody
 
 		public static double sAirDensityThreshold = 0.000000001;
 		public static double sAverageCd = 0.15;
+		public static int sInterval = 5;
+		public static int sIntervalCounter = 0;
 
 		public IButton btnAtmosphereDecay = null;
 
@@ -75,24 +77,30 @@ namespace NBody
 
 			if (FlightGlobals.fetch != null)
 			{
-				foreach (Vessel v in FlightGlobals.fetch.vessels)
+				if (sIntervalCounter >= sInterval)
 				{
-					if (FlightGlobals.fetch.activeVessel == v) continue;
-					if (v.packed == true && v.LandedOrSplashed == false)
-					{ 
-						double airDensity = FlightGlobals.getAtmDensity(FlightGlobals.getStaticPressure(v.GetWorldPos3D(), v.mainBody));
-						if (airDensity >= sAirDensityThreshold && v.mainBody.atmosphere == true && v.altitude <= v.mainBody.maxAtmosphereAltitude)
+					sIntervalCounter = 0;
+					foreach (Vessel v in FlightGlobals.fetch.vessels)
+					{
+						if (FlightGlobals.fetch.activeVessel == v) continue;
+						if (v.packed == true && v.LandedOrSplashed == false)
 						{
-							Vector3d dragVector = -v.orbit.vel.normalized * (float)(0.5 * sAverageCd * airDensity * v.orbit.vel.sqrMagnitude / 1000.0);
-							//Debug.Log(v.orbit.vel.ToString() + " 0.5*" + sAverageCd.ToString() + "*" + (airDensity * v.orbit.vel.sqrMagnitude).ToString() + "/1000.0 = " + dragVector.ToString());
+							double airDensity = FlightGlobals.getAtmDensity(FlightGlobals.getStaticPressure(v.GetWorldPos3D(), v.mainBody));
+							if (airDensity >= sAirDensityThreshold && v.mainBody.atmosphere == true && v.altitude <= v.mainBody.maxAtmosphereAltitude)
+							{
+								Vector3d dragVector = -v.orbit.vel.normalized * (float)(0.5 * sAverageCd * airDensity * v.orbit.vel.sqrMagnitude / 1000.0);
+								//Debug.Log(v.orbit.vel.ToString() + " 0.5*" + sAverageCd.ToString() + "*" + (airDensity * v.orbit.vel.sqrMagnitude).ToString() + "/1000.0 = " + dragVector.ToString());
 
-							if (OrbitManipulator.s_singleton != null)
-								OrbitManipulator.s_singleton.AddManipulation(v, dragVector);
-
+								if (OrbitManipulator.s_singleton != null)
+									OrbitManipulator.s_singleton.AddManipulation(v, dragVector * sInterval);
+							}
 						}
 					}
 				}
-
+				else 
+				{
+					sIntervalCounter++;
+				}
 			}
 		}
 	}

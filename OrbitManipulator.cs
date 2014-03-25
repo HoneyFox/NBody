@@ -70,7 +70,17 @@ namespace NBody
 						}
 					}
 				}
-				
+				if (settingNode.HasValue("KillThrottleWhenExitingTimeWarp"))
+				{
+					bool killThrottleWhenExitingTimeWarp;
+					if (bool.TryParse(settingNode.GetValue("KillThrottleWhenExitingTimeWarp"), out killThrottleWhenExitingTimeWarp))
+					{
+						if (WarpableEngineThrottleGUI.s_singleton != null)
+						{
+							WarpableEngineThrottleGUI.s_singleton.killThrottleWhenExitingTimeWarp = killThrottleWhenExitingTimeWarp;
+						}
+					}
+				}
 			}
 		}
 
@@ -99,6 +109,7 @@ namespace NBody
 				settingNode.SetValue("AtmosphereDecay", AtmosphereDecay.s_singleton.activated.ToString());
 				settingNode.SetValue("NBodyForce", NBody.s_singleton.forceApplying.ToString());
 				settingNode.SetValue("WarpableEngineList", WarpableEngineThrottleGUI.s_singleton.activated.ToString());
+				settingNode.SetValue("KillThrottleWhenExitingTimeWarp", WarpableEngineThrottleGUI.s_singleton.killThrottleWhenExitingTimeWarp.ToString()); 
 				ConfigNode saveNode = new ConfigNode();
 				saveNode.AddNode(settingNode);
 				saveNode.Save(KSPUtil.ApplicationRootPath.Replace("\\", "/") + "GameData/NBody/Settings.cfg");
@@ -119,7 +130,7 @@ namespace NBody
 
 					if (!double.IsNaN(orbit2.inclination) && !double.IsNaN(orbit2.eccentricity) && !double.IsNaN(orbit2.semiMajorAxis))
 					{
-						if (double.IsNaN(orbit2.timeToAp) || (orbit2.timeToAp > TimeWarp.fixedDeltaTime))
+						if (double.IsNaN(orbit2.timeToAp) || (orbit2.timeToAp > TimeWarp.fixedDeltaTime * 10.0f && orbit2.timeToAp < orbit2.period - TimeWarp.fixedDeltaTime * 10.0f))
 						vessel.orbit.inclination = orbit2.inclination;
 						vessel.orbit.eccentricity = orbit2.eccentricity;
 						vessel.orbit.semiMajorAxis = orbit2.semiMajorAxis;

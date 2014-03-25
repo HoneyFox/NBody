@@ -15,6 +15,8 @@ namespace NBody
 		
 		public IButton btnWarpableEngineList = null;
 		public bool activated = true;
+
+		public bool killThrottleWhenExitingTimeWarp = true;
 		
 		private Rect windowRect = new Rect(60, 120, 200, 50);
 		private List<WarpableEngine> engines = new List<WarpableEngine>();
@@ -60,6 +62,21 @@ namespace NBody
 
 		void Update()
 		{
+			if (InputLockManager.IsLocked(ControlTypes.THROTTLE))
+			{
+				List<string> locksToBeRemoved = new List<string>();
+				foreach (KeyValuePair<string, ulong> kv in InputLockManager.lockStack)
+				{
+					//Debug.Log(kv.Key + ": " + Convert.ToString((long)kv.Value, 2));
+					//if ((kv.Value & (uint)(ControlTypes.THROTTLE)) != 0)
+					//	locksToBeRemoved.Add(kv.Key);
+				}
+				locksToBeRemoved.Add("TimeWarpLock");
+				
+				foreach(string lockName in locksToBeRemoved)
+					InputLockManager.RemoveControlLock(lockName);
+			}
+			
 			if(FlightGlobals.fetch != null && FlightGlobals.fetch.activeVessel != null)
 			{
 				foreach (Part p in FlightGlobals.fetch.activeVessel.Parts)
@@ -87,11 +104,26 @@ namespace NBody
 		private void DrawGUI(int windowId)
 		{
 			GUILayout.BeginVertical();
+			bool orgKillThrottleWhenExitingTimeWarp = killThrottleWhenExitingTimeWarp;
+			killThrottleWhenExitingTimeWarp = GUILayout.Toggle(killThrottleWhenExitingTimeWarp, "Auto Cut-Off", GUI.skin.button);
+			if (killThrottleWhenExitingTimeWarp != orgKillThrottleWhenExitingTimeWarp)
+				OrbitManipulator.s_singleton.SaveConfigs();
+			GUILayout.BeginHorizontal();
+			bool killThrottle = GUILayout.Button(" Cut-Off ");
+			bool fullThrottle = GUILayout.Button("MaxThrust");
+			GUILayout.EndHorizontal();
 			foreach (WarpableEngine we in engines)
-			{ 
-				GUILayout.Label(we.part.partInfo.title, GUILayout.MaxWidth(200));
+			{
+				string title = we.part.partInfo.title;
+				if (title.Length >= 33)
+					title = title.Substring(0, 29) + "...";
+				GUILayout.Label(title, GUILayout.MaxWidth(200));
 				we.throttle = Mathf.RoundToInt(GUILayout.HorizontalSlider(we.throttle, 0.0f, 100.0f, GUILayout.Width(200)));
+
+				if (killThrottle) we.throttle = 0.0f;
+				if (fullThrottle) we.throttle = 100.0f;
 			}
+			
 			GUILayout.EndVertical();
 			GUI.DragWindow(new Rect(0, 0, 200, 20));
 		}
@@ -272,7 +304,7 @@ namespace NBody
 			else
 			{
 				// Reset the throttle after exiting the warp.
-				if (lastUpdateIsWarping == true)
+				if (lastUpdateIsWarping == true && WarpableEngineThrottleGUI.s_singleton.killThrottleWhenExitingTimeWarp)
 					throttle = 0f;
 
 				lastUpdateIsWarping = false;

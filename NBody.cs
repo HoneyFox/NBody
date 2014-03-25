@@ -127,8 +127,18 @@ namespace NBody
 							{
 								if (!refBodies.Contains(cb)) //(cb != FlightGlobals.fetch.activeVessel.mainBody)
 								{
-									Vector3d locationVector = cb.position - part.transform.position;
-									force += locationVector.normalized * cb.gravParameter / locationVector.sqrMagnitude;
+									List<CelestialBody> parentBodies = new List<CelestialBody>();
+									parentBodies.Add(cb);
+									do
+									{
+										parentBodies.Add(parentBodies[parentBodies.Count - 1].referenceBody);
+									}
+									while (parentBodies[parentBodies.Count - 1].referenceBody.bodyName != "Sun");
+									if (parentBodies.Contains(FlightGlobals.fetch.activeVessel.mainBody))
+									{
+										Vector3d locationVector = cb.position - part.transform.position;
+										force += locationVector.normalized * cb.gravParameter / locationVector.sqrMagnitude;
+									}
 								}
 								else
 								{
@@ -143,7 +153,7 @@ namespace NBody
 										
 										//if((forceTopBodyToVessel - forceTopBodyToMainBody).magnitude > 0.0000001f)
 										//	Debug.Log("AccDiff: " + (forceTopBodyToVessel - forceTopBodyToMainBody).ToString()); 
-										force += forceTopBodyToVessel - forceTopBodyToMainBody;
+										force += (forceTopBodyToVessel - forceTopBodyToMainBody);
 									}
 								}
 							}
@@ -186,7 +196,6 @@ namespace NBody
 
 											if (OrbitManipulator.s_singleton != null)
 												OrbitManipulator.s_singleton.AddManipulation(prevVessel, actualForce * timeAccumulated * times / TimeWarp.fixedDeltaTime);
-
 											timeAccumulated = 0.0f;
 										}
 										else
