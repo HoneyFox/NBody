@@ -130,7 +130,7 @@ namespace NBody
 
 					if (!double.IsNaN(orbit2.inclination) && !double.IsNaN(orbit2.eccentricity) && !double.IsNaN(orbit2.semiMajorAxis))
 					{
-						if (double.IsNaN(orbit2.timeToAp) || (orbit2.timeToAp > TimeWarp.fixedDeltaTime * 10.0f && orbit2.timeToAp < orbit2.period - TimeWarp.fixedDeltaTime * 10.0f))
+						if ((double.IsNaN(orbit2.timeToAp) || (orbit2.timeToAp > TimeWarp.fixedDeltaTime * 10.0f && orbit2.timeToAp < orbit2.period - TimeWarp.fixedDeltaTime * 10.0f)) && (orbit2.timeToPe > TimeWarp.fixedDeltaTime * 10.0f))
 						vessel.orbit.inclination = orbit2.inclination;
 						vessel.orbit.eccentricity = orbit2.eccentricity;
 						vessel.orbit.semiMajorAxis = orbit2.semiMajorAxis;

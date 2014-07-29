@@ -304,11 +304,15 @@ namespace NBody
 			else
 			{
 				// Reset the throttle after exiting the warp.
-				if (lastUpdateIsWarping == true && WarpableEngineThrottleGUI.s_singleton.killThrottleWhenExitingTimeWarp)
-					throttle = 0f;
+				if (lastUpdateIsWarping == true)
+				{
+					if (WarpableEngineThrottleGUI.s_singleton.killThrottleWhenExitingTimeWarp)
+						throttle = 0f;
+
+					//engine.DeactivatePowerFX();
+				}
 
 				lastUpdateIsWarping = false;
-				engine.DeactivatePowerFX();
 
 				//if(isEngineFX == false)
 				//{
